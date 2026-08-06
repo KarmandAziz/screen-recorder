@@ -1,0 +1,9 @@
+<Application x:Class="LocalScreenRecorder.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.Resources>
+        <Style TargetType="ToolTip">
+            <Setter Property="MaxWidth" Value="360" />
+        </Style>
+    </Application.Resources>
+</Application>
