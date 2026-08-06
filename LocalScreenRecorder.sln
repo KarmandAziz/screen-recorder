@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalScreenRecorder.Core", "src\LocalScreenRecorder.Core\LocalScreenRecorder.Core.csproj", "{1EED7E36-6D9B-47FC-9E57-F105BECE029A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalScreenRecorder.App", "src\LocalScreenRecorder.App\LocalScreenRecorder.App.csproj", "{CF0655FC-F745-4FD3-B115-5F5C8AC01EEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalScreenRecorder.Tests", "tests\LocalScreenRecorder.Tests\LocalScreenRecorder.Tests.csproj", "{D9F48B0D-B8E1-4BE1-BB77-331F39053FB8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1EED7E36-6D9B-47FC-9E57-F105BECE029A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1EED7E36-6D9B-47FC-9E57-F105BECE029A}.Debug|x64.Build.0 = Debug|Any CPU
+		{1EED7E36-6D9B-47FC-9E57-F105BECE029A}.Release|x64.ActiveCfg = Release|Any CPU
+		{1EED7E36-6D9B-47FC-9E57-F105BECE029A}.Release|x64.Build.0 = Release|Any CPU
+		{CF0655FC-F745-4FD3-B115-5F5C8AC01EEC}.Debug|x64.ActiveCfg = Debug|x64
+		{CF0655FC-F745-4FD3-B115-5F5C8AC01EEC}.Debug|x64.Build.0 = Debug|x64
+		{CF0655FC-F745-4FD3-B115-5F5C8AC01EEC}.Release|x64.ActiveCfg = Release|x64
+		{CF0655FC-F745-4FD3-B115-5F5C8AC01EEC}.Release|x64.Build.0 = Release|x64
+		{D9F48B0D-B8E1-4BE1-BB77-331F39053FB8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D9F48B0D-B8E1-4BE1-BB77-331F39053FB8}.Debug|x64.Build.0 = Debug|Any CPU
+		{D9F48B0D-B8E1-4BE1-BB77-331F39053FB8}.Release|x64.ActiveCfg = Release|Any CPU
+		{D9F48B0D-B8E1-4BE1-BB77-331F39053FB8}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1EED7E36-6D9B-47FC-9E57-F105BECE029A} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{CF0655FC-F745-4FD3-B115-5F5C8AC01EEC} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{D9F48B0D-B8E1-4BE1-BB77-331F39053FB8} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,13 @@
+<Window x:Class="LocalScreenRecorder.App.Views.SelectionBorderWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        IsHitTestVisible="False">
+    <Border BorderBrush="#FF3B82F6" BorderThickness="3" />
+</Window>

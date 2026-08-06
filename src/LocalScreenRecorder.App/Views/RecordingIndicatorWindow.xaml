@@ -1,0 +1,19 @@
+<Window x:Class="LocalScreenRecorder.App.Views.RecordingIndicatorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Width="154" Height="44"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowActivated="False"
+        ShowInTaskbar="False">
+    <Border Background="#EE111827" BorderBrush="#44374151" BorderThickness="1"
+            CornerRadius="8" Padding="12,8">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <Ellipse x:Name="StateDot" Width="10" Height="10" Fill="#FFEF4444" Margin="0,0,9,0" />
+            <TextBlock x:Name="StateText" Text="Recording" Foreground="White" FontWeight="SemiBold" />
+        </StackPanel>
+    </Border>
+</Window>

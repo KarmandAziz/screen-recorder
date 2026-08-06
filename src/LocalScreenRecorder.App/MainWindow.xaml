@@ -1,0 +1,262 @@
+<Window x:Class="LocalScreenRecorder.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:core="clr-namespace:LocalScreenRecorder.Core.Models;assembly=LocalScreenRecorder.Core"
+        Title="Local Screen Recorder"
+        Width="720" Height="790" MinWidth="680" MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        Background="#FFF3F4F6">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <Style TargetType="GroupBox">
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="Background" Value="White" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="13,7" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="MinHeight" Value="32" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="MinHeight" Value="28" />
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Padding" Value="5,3" />
+            <Setter Property="MinHeight" Value="28" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="16,14,16,8">
+                <DockPanel Margin="2,0,2,12">
+                    <StackPanel DockPanel.Dock="Left">
+                        <TextBlock Text="Screen Recorder" FontSize="22" FontWeight="SemiBold" Foreground="#FF111827" />
+                        <TextBlock Text="Local Windows capture to MP4" Foreground="#FF6B7280" Margin="0,2,0,0" />
+                    </StackPanel>
+                    <Button DockPanel.Dock="Right" Content="Refresh devices" Command="{Binding RefreshDevicesCommand}"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="8,0,0,0" />
+                </DockPanel>
+
+                <GroupBox Header="Recording source">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Source" VerticalAlignment="Center" />
+                        <ComboBox Grid.Column="1" Grid.ColumnSpan="2"
+                                  SelectedValue="{Binding SourceKind}" SelectedValuePath="Tag">
+                            <ComboBoxItem Content="Entire screen" Tag="{x:Static core:CaptureSourceKind.EntireScreen}" />
+                            <ComboBoxItem Content="Selected monitor" Tag="{x:Static core:CaptureSourceKind.SelectedMonitor}" />
+                            <ComboBoxItem Content="Custom area" Tag="{x:Static core:CaptureSourceKind.CustomArea}" />
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="1" Text="Monitor" VerticalAlignment="Center" Margin="0,8,0,0" />
+                        <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,8,0,0"
+                                  ItemsSource="{Binding Displays}" DisplayMemberPath="Label"
+                                  SelectedItem="{Binding SelectedDisplay}"
+                                  IsEnabled="{Binding IsMonitorSource}" />
+
+                        <TextBlock Grid.Row="2" Text="Area" VerticalAlignment="Center" Margin="0,8,0,0" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedRegionText}"
+                                   VerticalAlignment="Center" Margin="0,8,10,0" Foreground="#FF4B5563" />
+                        <Button Grid.Row="2" Grid.Column="2" Content="Select Area" Command="{Binding SelectAreaCommand}"
+                                Margin="0,8,0,0" />
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="Audio">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="56" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <CheckBox Content="Record system audio" IsChecked="{Binding RecordSystemAudio}"
+                                  Grid.ColumnSpan="3" VerticalAlignment="Center" />
+                        <TextBlock Grid.Row="1" Text="System volume" Margin="22,8,0,0" VerticalAlignment="Center" />
+                        <Slider Grid.Row="1" Grid.Column="1" Margin="0,8,10,0" Minimum="0" Maximum="1"
+                                TickFrequency="0.05" Value="{Binding SystemAudioVolume}" />
+                        <TextBlock Grid.Row="1" Grid.Column="2" Margin="0,8,0,0" TextAlignment="Right"
+                                   Text="{Binding SystemAudioVolume, StringFormat={}{0:P0}}" />
+
+                        <CheckBox Grid.Row="2" Content="Record microphone" IsChecked="{Binding RecordMicrophone}"
+                                  Grid.ColumnSpan="3" Margin="0,8,0,0" />
+                        <TextBlock Grid.Row="3" Text="Microphone" Margin="22,8,0,0" VerticalAlignment="Center" />
+                        <ComboBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,8,0,0"
+                                  ItemsSource="{Binding Microphones}" DisplayMemberPath="Name"
+                                  SelectedItem="{Binding SelectedMicrophone}"
+                                  IsEnabled="{Binding IsMicrophoneSelectionEnabled}" />
+                        <TextBlock Grid.Row="4" Text="Microphone volume" Margin="22,8,0,0" VerticalAlignment="Center" />
+                        <TextBlock Grid.Row="4" Grid.Column="2" Margin="0,8,0,0" TextAlignment="Right"
+                                   Text="{Binding MicrophoneVolume, StringFormat={}{0:P0}}" />
+                        <Slider Grid.Row="4" Grid.Column="1" Margin="0,8,10,0" Minimum="0" Maximum="1"
+                                TickFrequency="0.05" Value="{Binding MicrophoneVolume}"
+                                IsEnabled="{Binding RecordMicrophone}" />
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="Quality">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="110" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Preset" VerticalAlignment="Center" />
+                        <ComboBox Grid.Column="1" SelectedValue="{Binding QualityPreset}" SelectedValuePath="Tag" Margin="0,0,10,0">
+                            <ComboBoxItem Content="Low" Tag="{x:Static core:QualityPresetKind.Low}" />
+                            <ComboBoxItem Content="Medium" Tag="{x:Static core:QualityPresetKind.Medium}" />
+                            <ComboBoxItem Content="High" Tag="{x:Static core:QualityPresetKind.High}" />
+                            <ComboBoxItem Content="Very High" Tag="{x:Static core:QualityPresetKind.VeryHigh}" />
+                            <ComboBoxItem Content="Custom" Tag="{x:Static core:QualityPresetKind.Custom}" />
+                        </ComboBox>
+                        <ComboBox Grid.Column="2" ItemsSource="{Binding FrameRates}" SelectedItem="{Binding FrameRate}" />
+
+                        <Grid Grid.Row="1" Grid.ColumnSpan="3" Margin="0,10,0,0"
+                              Visibility="{Binding IsCustomQuality, Converter={StaticResource BoolToVisibility}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="110" />
+                                <ColumnDefinition Width="80" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Output bounds" VerticalAlignment="Center" />
+                            <TextBox Grid.Column="1" Text="{Binding CustomWidth}" />
+                            <TextBlock Grid.Column="2" Text="×" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <TextBox Grid.Column="3" Text="{Binding CustomHeight}" />
+                            <TextBlock Grid.Column="4" Text="Custom FPS" Margin="16,0,6,0" VerticalAlignment="Center" />
+                            <TextBox Grid.Column="5" Text="{Binding CustomFrameRate}" />
+                        </Grid>
+
+                        <Grid Grid.Row="2" Grid.ColumnSpan="3" Margin="0,8,0,0"
+                              Visibility="{Binding IsCustomQuality, Converter={StaticResource BoolToVisibility}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150" />
+                                <ColumnDefinition Width="90" />
+                                <ColumnDefinition Width="130" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Video kbps" VerticalAlignment="Center" />
+                            <TextBox Grid.Column="1" Text="{Binding CustomVideoBitrate}" />
+                            <TextBlock Grid.Column="2" Text="Audio kbps" Margin="16,0,6,0" VerticalAlignment="Center" />
+                            <TextBox Grid.Column="3" Text="{Binding CustomAudioBitrate}" />
+                            <CheckBox Grid.Column="4" Content="Hardware encoding" Margin="16,0,0,0"
+                                      IsChecked="{Binding CustomHardwareEncoding}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="Output">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding OutputFolder, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                        <Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseFolderCommand}" Margin="0" />
+                    </Grid>
+                </GroupBox>
+
+                <Expander Header="Settings and global shortcuts" IsExpanded="False" Margin="0,0,0,10">
+                    <Border Background="White" Padding="12,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="155" />
+                                <ColumnDefinition Width="150" />
+                                <ColumnDefinition Width="155" />
+                                <ColumnDefinition Width="150" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Start / Stop" VerticalAlignment="Center" />
+                            <TextBox Grid.Column="1" Text="{Binding StartStopShortcutText, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Grid.Column="2" Text="Pause / Resume" Margin="15,0,0,0" VerticalAlignment="Center" />
+                            <TextBox Grid.Column="3" Text="{Binding PauseResumeShortcutText, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <TextBlock Grid.Row="1" Text="Select area" Margin="0,8,0,0" VerticalAlignment="Center" />
+                            <TextBox Grid.Row="1" Grid.Column="1" Margin="0,8,0,0"
+                                     Text="{Binding SelectAreaShortcutText, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button Grid.Row="1" Grid.Column="3" Content="Apply shortcuts" Margin="0,8,0,0"
+                                    Command="{Binding ApplyShortcutsCommand}" />
+
+                            <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Content="Minimize when recording" Margin="0,10,0,0"
+                                      IsChecked="{Binding MinimizeWhenRecording}" />
+                            <CheckBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Content="Show recording indicator" Margin="15,10,0,0"
+                                      IsChecked="{Binding ShowRecordingIndicator}" />
+                        </Grid>
+                    </Border>
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="1" Background="White" BorderBrush="#FFD1D5DB" BorderThickness="0,1,0,0" Padding="16,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Start Recording" Command="{Binding StartCommand}" Background="#FF2563EB" Foreground="White" />
+                    <Button Content="Pause" Command="{Binding PauseCommand}" />
+                    <Button Content="Resume" Command="{Binding ResumeCommand}" />
+                    <Button Content="Stop" Command="{Binding StopCommand}" Margin="0" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="{Binding StatusText}" Margin="16,0" VerticalAlignment="Center"
+                           Foreground="#FF374151" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Column="2" Text="{Binding DurationText}" FontSize="20" FontWeight="SemiBold"
+                           FontFamily="Consolas" VerticalAlignment="Center" />
+
+                <DockPanel Grid.Row="1" Grid.ColumnSpan="3" Margin="0,8,0,0">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button Content="Open File" Command="{Binding OpenFileCommand}" Padding="9,4" MinHeight="26" />
+                        <Button Content="Open Folder" Command="{Binding OpenFolderCommand}" Padding="9,4" MinHeight="26" Margin="0" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding SavedPath}" Foreground="#FF6B7280" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                </DockPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
