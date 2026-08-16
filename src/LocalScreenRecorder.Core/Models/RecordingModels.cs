@@ -10,10 +10,12 @@ public enum CaptureSourceKind
 public enum RecordingState
 {
     Ready,
+    Countdown,
     Starting,
     Recording,
     Paused,
-    Saving,
+    Stopping,
+    Finalizing,
     Saved,
     Error
 }

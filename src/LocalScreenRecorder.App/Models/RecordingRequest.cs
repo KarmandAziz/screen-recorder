@@ -15,6 +15,7 @@ public sealed record RecordingRequest(
     QualityPresetKind QualityPreset,
     int FrameRate,
     CustomQualitySettings CustomQuality,
-    string OutputFolder);
+    string OutputFolder,
+    bool IncludeCursor);
 
 public sealed record RecordingStateChangedEventArgs(RecordingState State, string Message, string? Path = null);

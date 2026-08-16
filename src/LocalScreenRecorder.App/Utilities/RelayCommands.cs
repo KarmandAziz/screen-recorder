@@ -10,7 +10,10 @@ public sealed class RelayCommand(Action execute, Func<bool>? canExecute = null) 
     public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }
 
-public sealed class AsyncRelayCommand(Func<Task> execute, Func<bool>? canExecute = null) : ICommand
+public sealed class AsyncRelayCommand(
+    Func<Task> execute,
+    Func<bool>? canExecute = null,
+    Action<Exception>? errorHandler = null) : ICommand
 {
     private bool _isExecuting;
 
@@ -25,6 +28,11 @@ public sealed class AsyncRelayCommand(Func<Task> execute, Func<bool>? canExecute
         try
         {
             await execute();
+        }
+        catch (Exception exception)
+        {
+            if (errorHandler is null) throw;
+            errorHandler(exception);
         }
         finally
         {

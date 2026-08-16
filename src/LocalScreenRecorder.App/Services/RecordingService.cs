@@ -17,20 +17,17 @@ public sealed class RecordingService(
     private readonly object _sync = new();
     private readonly SemaphoreSlim _operationGate = new(1, 1);
     private readonly Stopwatch _activeSegment = new();
+    private readonly RecordingStateMachine _stateMachine = new();
     private Recorder? _recorder;
     private RecordingPaths? _paths;
     private TaskCompletionSource<bool>? _started;
     private TaskCompletionSource<string>? _completed;
     private TimeSpan _accumulated;
-    private RecordingState _state = RecordingState.Ready;
     private bool _disposed;
 
     public event EventHandler<RecordingStateChangedEventArgs>? StateChanged;
 
-    public RecordingState State
-    {
-        get { lock (_sync) return _state; }
-    }
+    public RecordingState State => _stateMachine.State;
 
     public TimeSpan Elapsed
     {
@@ -42,10 +39,12 @@ public sealed class RecordingService(
     public async Task StartAsync(RecordingRequest request, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        Task<bool>? started = null;
         await _operationGate.WaitAsync(cancellationToken);
         try
         {
-            if (State is RecordingState.Starting or RecordingState.Recording or RecordingState.Paused or RecordingState.Saving)
+            if (State is RecordingState.Starting or RecordingState.Recording or RecordingState.Paused
+                or RecordingState.Stopping or RecordingState.Finalizing)
             {
                 throw new InvalidOperationException("A recording is already active.");
             }
@@ -82,17 +81,46 @@ public sealed class RecordingService(
             _recorder.OnRecordingFailed += RecorderOnRecordingFailed;
             _recorder.OnStatusChanged += RecorderOnStatusChanged;
 
-            logger.Info($"Starting recording to temporary file '{_paths.TemporaryPath}' at {quality.Width}x{quality.Height}, {quality.FrameRate} FPS.");
+            logger.Info(
+                $"Starting {request.SourceKind} recording to temporary file '{_paths.TemporaryPath}' at " +
+                $"{quality.Width}x{quality.Height}, {quality.FrameRate} FPS; desktop audio={request.RecordSystemAudio}, " +
+                $"microphone={request.RecordMicrophone}, cursor={request.IncludeCursor}, hardware={quality.UseHardwareEncoding}.");
             await Task.Run(() => _recorder.Record(_paths.TemporaryPath), cancellationToken);
-            await _started.Task.WaitAsync(TimeSpan.FromSeconds(20), cancellationToken);
+            started = _started.Task;
         }
         catch (Exception exception)
         {
-            logger.Error("Recording could not be started.", exception);
-            CleanupFailedSession();
-            var message = ToFriendlyMessage(exception.Message, "The recording could not be started.");
-            SetState(RecordingState.Error, message);
-            throw new InvalidOperationException(message, exception);
+            throw HandleStartFailure(exception);
+        }
+        finally
+        {
+            _operationGate.Release();
+        }
+
+        try
+        {
+            await started!.WaitAsync(TimeSpan.FromSeconds(20), cancellationToken);
+        }
+        catch (Exception exception) when (State is RecordingState.Stopping or RecordingState.Finalizing or RecordingState.Saved)
+        {
+            logger.Info($"Start wait ended after a concurrent stop: {exception.GetType().Name}.");
+        }
+        catch (Exception exception)
+        {
+            await _operationGate.WaitAsync(CancellationToken.None);
+            try { throw HandleStartFailure(exception); }
+            finally { _operationGate.Release(); }
+        }
+    }
+
+    public async Task PauseAsync()
+    {
+        await _operationGate.WaitAsync();
+        try
+        {
+            if (State != RecordingState.Recording || _recorder is null) return;
+            logger.Info("Pausing recording.");
+            await Task.Run(_recorder.Pause);
         }
         finally
         {
@@ -100,16 +128,19 @@ public sealed class RecordingService(
         }
     }
 
-    public async Task PauseAsync()
-    {
-        if (State != RecordingState.Recording || _recorder is null) return;
-        await Task.Run(_recorder.Pause);
-    }
-
     public async Task ResumeAsync()
     {
-        if (State != RecordingState.Paused || _recorder is null) return;
-        await Task.Run(_recorder.Resume);
+        await _operationGate.WaitAsync();
+        try
+        {
+            if (State != RecordingState.Paused || _recorder is null) return;
+            logger.Info("Resuming recording.");
+            await Task.Run(_recorder.Resume);
+        }
+        finally
+        {
+            _operationGate.Release();
+        }
     }
 
     public async Task StopAsync(CancellationToken cancellationToken = default)
@@ -117,7 +148,7 @@ public sealed class RecordingService(
         await _operationGate.WaitAsync(cancellationToken);
         try
         {
-            if (State == RecordingState.Saving && _completed is not null)
+            if (State is RecordingState.Stopping or RecordingState.Finalizing && _completed is not null)
             {
                 await _completed.Task.WaitAsync(TimeSpan.FromSeconds(60), cancellationToken);
                 return;
@@ -128,7 +159,8 @@ public sealed class RecordingService(
                 return;
             }
 
-            SetState(RecordingState.Saving, "Finalizing MP4…");
+            SetState(RecordingState.Stopping, "Stopping capture safely…");
+            logger.Info("Stopping recording and waiting for MP4 finalization.");
             StopTiming();
             var completion = _completed ?? throw new InvalidOperationException("The recording session is not initialized.");
             await Task.Run(_recorder.Stop, cancellationToken);
@@ -152,7 +184,8 @@ public sealed class RecordingService(
         _disposed = true;
         try
         {
-            if (_recorder is not null && State is RecordingState.Starting or RecordingState.Recording or RecordingState.Paused)
+            if (_recorder is not null && State is RecordingState.Starting or RecordingState.Recording or RecordingState.Paused
+                or RecordingState.Stopping or RecordingState.Finalizing)
             {
                 _recorder.Stop();
                 _completed?.Task.Wait(TimeSpan.FromSeconds(10));
@@ -172,6 +205,7 @@ public sealed class RecordingService(
 
     private void RecorderOnStatusChanged(object? sender, RecordingStatusEventArgs e)
     {
+        if (!IsCurrentRecorder(sender)) return;
         switch (e.Status)
         {
             case RecorderStatus.Recording:
@@ -188,13 +222,14 @@ public sealed class RecordingService(
                 break;
             case RecorderStatus.Finishing:
                 StopTiming();
-                SetState(RecordingState.Saving, "Finalizing MP4…");
+                SetState(RecordingState.Finalizing, "Finalizing MP4…");
                 break;
         }
     }
 
     private void RecorderOnRecordingComplete(object? sender, RecordingCompleteEventArgs e)
     {
+        if (!IsCurrentRecorder(sender)) return;
         StopTiming();
         try
         {
@@ -209,14 +244,20 @@ public sealed class RecordingService(
             LastSavedPath = finalPath;
             logger.Info($"Recording saved to '{finalPath}'.");
             SetState(RecordingState.Saved, "Recording saved", finalPath);
+            _started?.TrySetCanceled();
             _completed?.TrySetResult(finalPath);
         }
         catch (Exception exception)
         {
             logger.Error("MP4 finalization failed.", exception);
-            CleanupTemporaryFile();
+            var recoveryPath = _paths?.TemporaryPath;
+            if (recoveryPath is not null && File.Exists(recoveryPath)) LastSavedPath = recoveryPath;
             var wrapped = new IOException("The MP4 was encoded but could not be moved to its final filename.", exception);
-            SetState(RecordingState.Error, "The MP4 could not be finalized. Check the output folder and available disk space.");
+            var recoveryMessage = recoveryPath is not null && File.Exists(recoveryPath)
+                ? "The recording was encoded but could not be renamed. The recoverable partial MP4 remains in the output folder."
+                : "The MP4 could not be finalized. Check the output folder and available disk space.";
+            SetState(RecordingState.Error, recoveryMessage, LastSavedPath);
+            _started?.TrySetCanceled();
             _completed?.TrySetException(wrapped);
         }
         finally
@@ -227,6 +268,7 @@ public sealed class RecordingService(
 
     private void RecorderOnRecordingFailed(object? sender, RecordingFailedEventArgs e)
     {
+        if (!IsCurrentRecorder(sender)) return;
         StopTiming();
         logger.Error($"Native recorder failure: {e.Error}");
         CleanupTemporaryFile();
@@ -267,12 +309,19 @@ public sealed class RecordingService(
 
     private static void EnsureDiskSpace(string path)
     {
-        var root = Path.GetPathRoot(Path.GetFullPath(path));
-        if (root is null) return;
-        var drive = new DriveInfo(root);
-        if (drive.IsReady && drive.AvailableFreeSpace < 250L * 1024 * 1024)
+        try
         {
-            throw new IOException("The output drive has less than 250 MB of free space.");
+            var root = Path.GetPathRoot(Path.GetFullPath(path));
+            if (root is null || root.StartsWith("\\\\", StringComparison.Ordinal)) return;
+            var drive = new DriveInfo(root);
+            if (drive.IsReady && drive.AvailableFreeSpace < 250L * 1024 * 1024)
+            {
+                throw new IOException("The output drive has less than 250 MB of free space. Free space or choose another folder.");
+            }
+        }
+        catch (ArgumentException)
+        {
+            // Some virtual or network-backed folders do not expose DriveInfo reliably.
         }
     }
 
@@ -298,8 +347,26 @@ public sealed class RecordingService(
 
     private void SetState(RecordingState state, string message, string? path = null)
     {
-        lock (_sync) _state = state;
+        if (!_stateMachine.TryTransitionTo(state) && _stateMachine.State != state)
+        {
+            logger.Warn($"Ignored invalid recording transition {_stateMachine.State} -> {state}: {message}");
+            return;
+        }
         StateChanged?.Invoke(this, new RecordingStateChangedEventArgs(state, message, path));
+    }
+
+    private Exception HandleStartFailure(Exception exception)
+    {
+        logger.Error("Recording could not be started.", exception);
+        CleanupFailedSession();
+        var message = ToFriendlyMessage(exception.Message, "The recording could not be started.");
+        SetState(RecordingState.Error, message);
+        return new InvalidOperationException(message, exception);
+    }
+
+    private bool IsCurrentRecorder(object? sender)
+    {
+        lock (_sync) return sender is not null && ReferenceEquals(sender, _recorder);
     }
 
     private void CleanupFailedSession()
@@ -366,7 +433,8 @@ public sealed class RecordingService(
         {
             foreach (var path in Directory.EnumerateFiles(folder, ".*.partial.mp4"))
             {
-                if (File.GetLastWriteTimeUtc(path) < DateTime.UtcNow.AddDays(-1)) File.Delete(path);
+                var file = new FileInfo(path);
+                if (file.Length == 0 && file.LastWriteTimeUtc < DateTime.UtcNow.AddDays(-7)) file.Delete();
             }
         }
         catch

@@ -1,4 +1,5 @@
 using LocalScreenRecorder.App.Views;
+using LocalScreenRecorder.Core.Models;
 
 namespace LocalScreenRecorder.App.Services;
 
@@ -19,5 +20,5 @@ public sealed class RecordingIndicatorService : IRecordingIndicatorService
         _window = null;
     }
 
-    public void SetPaused(bool paused) => _window?.SetPaused(paused);
+    public void Update(RecordingState state, TimeSpan elapsed) => _window?.Update(state, elapsed);
 }

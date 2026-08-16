@@ -31,6 +31,7 @@ public sealed class AudioCaptureService(IAudioMixerService mixer, ILoggingServic
     public AudioOptions CreateOptions(RecordingRequest request, int audioBitrateKbps)
     {
         var enabled = request.RecordSystemAudio || request.RecordMicrophone;
+        var microphoneId = ResolveMicrophoneId(request.MicrophoneDeviceId, request.RecordMicrophone);
         var volumes = mixer.Normalize(
             request.SystemAudioVolume,
             request.MicrophoneVolume,
@@ -43,7 +44,7 @@ public sealed class AudioCaptureService(IAudioMixerService mixer, ILoggingServic
             IsOutputDeviceEnabled = request.RecordSystemAudio,
             IsInputDeviceEnabled = request.RecordMicrophone,
             AudioOutputDevice = string.Empty,
-            AudioInputDevice = request.MicrophoneDeviceId ?? string.Empty,
+            AudioInputDevice = microphoneId,
             OutputVolume = volumes.SystemVolume,
             InputVolume = volumes.MicrophoneVolume,
             Channels = AudioChannels.Stereo,
@@ -55,5 +56,16 @@ public sealed class AudioCaptureService(IAudioMixerService mixer, ILoggingServic
                 _ => AudioBitrate.bitrate_192kbps
             }
         };
+    }
+
+    private string ResolveMicrophoneId(string? requestedId, bool enabled)
+    {
+        if (!enabled || string.IsNullOrWhiteSpace(requestedId)) return string.Empty;
+        var available = GetMicrophones();
+        if (available.Any(device => device.Id.Equals(requestedId, StringComparison.OrdinalIgnoreCase)))
+            return requestedId;
+
+        logger.Warn("The saved microphone is unavailable; the Windows default microphone will be used.");
+        return string.Empty;
     }
 }

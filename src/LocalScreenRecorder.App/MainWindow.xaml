@@ -3,259 +3,515 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:core="clr-namespace:LocalScreenRecorder.Core.Models;assembly=LocalScreenRecorder.Core"
         Title="Local Screen Recorder"
-        Width="720" Height="790" MinWidth="680" MinHeight="640"
+        Width="960" Height="800" MinWidth="780" MinHeight="640"
         WindowStartupLocation="CenterScreen"
-        Background="#FFF3F4F6">
+        Background="#FFF6F7FB"
+        FontFamily="Segoe UI"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-        <Style TargetType="GroupBox">
-            <Setter Property="Margin" Value="0,0,0,10" />
-            <Setter Property="Padding" Value="12,8" />
+
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#FFE5E7EB" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="18" />
+            <Setter Property="Margin" Value="0,0,0,14" />
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Foreground" Value="#FF1F2937" />
+            <Setter Property="Background" Value="#FFF3F4F6" />
+            <Setter Property="BorderBrush" Value="#FFD1D5DB" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="MinHeight" Value="36" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Opacity" Value="0.88" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Border" Property="Opacity" Value="0.78" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#FF2563EB" />
+                                <Setter TargetName="Border" Property="BorderThickness" Value="2" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Border" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#FF2563EB" />
+            <Setter Property="BorderBrush" Value="#FF2563EB" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="MinHeight" Value="44" />
+            <Setter Property="Padding" Value="22,10" />
+        </Style>
+
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="#FFDC2626" />
+            <Setter Property="BorderBrush" Value="#FFDC2626" />
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="9,6" />
+            <Setter Property="MinHeight" Value="34" />
+            <Setter Property="BorderBrush" Value="#FFD1D5DB" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="Padding" Value="7,5" />
+            <Setter Property="MinHeight" Value="34" />
+            <Setter Property="BorderBrush" Value="#FFD1D5DB" />
             <Setter Property="Background" Value="White" />
         </Style>
-        <Style TargetType="Button">
-            <Setter Property="Padding" Value="13,7" />
-            <Setter Property="Margin" Value="0,0,8,0" />
-            <Setter Property="MinHeight" Value="32" />
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#FF1F2937" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="26" />
         </Style>
-        <Style TargetType="TextBox">
-            <Setter Property="Padding" Value="6,4" />
-            <Setter Property="MinHeight" Value="28" />
+
+        <Style TargetType="TabItem">
+            <Setter Property="Padding" Value="16,9" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#FF6B7280" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="TabBorder" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1"
+                                CornerRadius="7" Padding="{TemplateBinding Padding}" Margin="0,0,6,0">
+                            <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="White" />
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#FFD1D5DB" />
+                                <Setter Property="Foreground" Value="#FF1D4ED8" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#FFEEF2FF" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#FF2563EB" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
-        <Style TargetType="ComboBox">
-            <Setter Property="Padding" Value="5,3" />
-            <Setter Property="MinHeight" Value="28" />
+
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#FF111827" />
+        </Style>
+
+        <Style x:Key="LabelText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#FF4B5563" />
+            <Setter Property="Margin" Value="0,0,0,5" />
+        </Style>
+
+        <Style x:Key="SummaryLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#FF6B7280" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+
+        <Style x:Key="SummaryValue" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#FF111827" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="Margin" Value="0,2,0,11" />
         </Style>
     </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="16,14,16,8">
-                <DockPanel Margin="2,0,2,12">
-                    <StackPanel DockPanel.Dock="Left">
-                        <TextBlock Text="Screen Recorder" FontSize="22" FontWeight="SemiBold" Foreground="#FF111827" />
-                        <TextBlock Text="Local Windows capture to MP4" Foreground="#FF6B7280" Margin="0,2,0,0" />
-                    </StackPanel>
-                    <Button DockPanel.Dock="Right" Content="Refresh devices" Command="{Binding RefreshDevicesCommand}"
-                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="8,0,0,0" />
-                </DockPanel>
-
-                <GroupBox Header="Recording source">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Text="Source" VerticalAlignment="Center" />
-                        <ComboBox Grid.Column="1" Grid.ColumnSpan="2"
-                                  SelectedValue="{Binding SourceKind}" SelectedValuePath="Tag">
-                            <ComboBoxItem Content="Entire screen" Tag="{x:Static core:CaptureSourceKind.EntireScreen}" />
-                            <ComboBoxItem Content="Selected monitor" Tag="{x:Static core:CaptureSourceKind.SelectedMonitor}" />
-                            <ComboBoxItem Content="Custom area" Tag="{x:Static core:CaptureSourceKind.CustomArea}" />
-                        </ComboBox>
-
-                        <TextBlock Grid.Row="1" Text="Monitor" VerticalAlignment="Center" Margin="0,8,0,0" />
-                        <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,8,0,0"
-                                  ItemsSource="{Binding Displays}" DisplayMemberPath="Label"
-                                  SelectedItem="{Binding SelectedDisplay}"
-                                  IsEnabled="{Binding IsMonitorSource}" />
-
-                        <TextBlock Grid.Row="2" Text="Area" VerticalAlignment="Center" Margin="0,8,0,0" />
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedRegionText}"
-                                   VerticalAlignment="Center" Margin="0,8,10,0" Foreground="#FF4B5563" />
-                        <Button Grid.Row="2" Grid.Column="2" Content="Select Area" Command="{Binding SelectAreaCommand}"
-                                Margin="0,8,0,0" />
-                    </Grid>
-                </GroupBox>
-
-                <GroupBox Header="Audio">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="56" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <CheckBox Content="Record system audio" IsChecked="{Binding RecordSystemAudio}"
-                                  Grid.ColumnSpan="3" VerticalAlignment="Center" />
-                        <TextBlock Grid.Row="1" Text="System volume" Margin="22,8,0,0" VerticalAlignment="Center" />
-                        <Slider Grid.Row="1" Grid.Column="1" Margin="0,8,10,0" Minimum="0" Maximum="1"
-                                TickFrequency="0.05" Value="{Binding SystemAudioVolume}" />
-                        <TextBlock Grid.Row="1" Grid.Column="2" Margin="0,8,0,0" TextAlignment="Right"
-                                   Text="{Binding SystemAudioVolume, StringFormat={}{0:P0}}" />
-
-                        <CheckBox Grid.Row="2" Content="Record microphone" IsChecked="{Binding RecordMicrophone}"
-                                  Grid.ColumnSpan="3" Margin="0,8,0,0" />
-                        <TextBlock Grid.Row="3" Text="Microphone" Margin="22,8,0,0" VerticalAlignment="Center" />
-                        <ComboBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,8,0,0"
-                                  ItemsSource="{Binding Microphones}" DisplayMemberPath="Name"
-                                  SelectedItem="{Binding SelectedMicrophone}"
-                                  IsEnabled="{Binding IsMicrophoneSelectionEnabled}" />
-                        <TextBlock Grid.Row="4" Text="Microphone volume" Margin="22,8,0,0" VerticalAlignment="Center" />
-                        <TextBlock Grid.Row="4" Grid.Column="2" Margin="0,8,0,0" TextAlignment="Right"
-                                   Text="{Binding MicrophoneVolume, StringFormat={}{0:P0}}" />
-                        <Slider Grid.Row="4" Grid.Column="1" Margin="0,8,10,0" Minimum="0" Maximum="1"
-                                TickFrequency="0.05" Value="{Binding MicrophoneVolume}"
-                                IsEnabled="{Binding RecordMicrophone}" />
-                    </Grid>
-                </GroupBox>
-
-                <GroupBox Header="Quality">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="110" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Text="Preset" VerticalAlignment="Center" />
-                        <ComboBox Grid.Column="1" SelectedValue="{Binding QualityPreset}" SelectedValuePath="Tag" Margin="0,0,10,0">
-                            <ComboBoxItem Content="Low" Tag="{x:Static core:QualityPresetKind.Low}" />
-                            <ComboBoxItem Content="Medium" Tag="{x:Static core:QualityPresetKind.Medium}" />
-                            <ComboBoxItem Content="High" Tag="{x:Static core:QualityPresetKind.High}" />
-                            <ComboBoxItem Content="Very High" Tag="{x:Static core:QualityPresetKind.VeryHigh}" />
-                            <ComboBoxItem Content="Custom" Tag="{x:Static core:QualityPresetKind.Custom}" />
-                        </ComboBox>
-                        <ComboBox Grid.Column="2" ItemsSource="{Binding FrameRates}" SelectedItem="{Binding FrameRate}" />
-
-                        <Grid Grid.Row="1" Grid.ColumnSpan="3" Margin="0,10,0,0"
-                              Visibility="{Binding IsCustomQuality, Converter={StaticResource BoolToVisibility}}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="150" />
-                                <ColumnDefinition Width="80" />
-                                <ColumnDefinition Width="24" />
-                                <ColumnDefinition Width="80" />
-                                <ColumnDefinition Width="110" />
-                                <ColumnDefinition Width="80" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Output bounds" VerticalAlignment="Center" />
-                            <TextBox Grid.Column="1" Text="{Binding CustomWidth}" />
-                            <TextBlock Grid.Column="2" Text="×" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            <TextBox Grid.Column="3" Text="{Binding CustomHeight}" />
-                            <TextBlock Grid.Column="4" Text="Custom FPS" Margin="16,0,6,0" VerticalAlignment="Center" />
-                            <TextBox Grid.Column="5" Text="{Binding CustomFrameRate}" />
-                        </Grid>
-
-                        <Grid Grid.Row="2" Grid.ColumnSpan="3" Margin="0,8,0,0"
-                              Visibility="{Binding IsCustomQuality, Converter={StaticResource BoolToVisibility}}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="150" />
-                                <ColumnDefinition Width="90" />
-                                <ColumnDefinition Width="130" />
-                                <ColumnDefinition Width="80" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Video kbps" VerticalAlignment="Center" />
-                            <TextBox Grid.Column="1" Text="{Binding CustomVideoBitrate}" />
-                            <TextBlock Grid.Column="2" Text="Audio kbps" Margin="16,0,6,0" VerticalAlignment="Center" />
-                            <TextBox Grid.Column="3" Text="{Binding CustomAudioBitrate}" />
-                            <CheckBox Grid.Column="4" Content="Hardware encoding" Margin="16,0,0,0"
-                                      IsChecked="{Binding CustomHardwareEncoding}" VerticalAlignment="Center" />
-                        </Grid>
-                    </Grid>
-                </GroupBox>
-
-                <GroupBox Header="Output">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBox Text="{Binding OutputFolder, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
-                        <Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseFolderCommand}" Margin="0" />
-                    </Grid>
-                </GroupBox>
-
-                <Expander Header="Settings and global shortcuts" IsExpanded="False" Margin="0,0,0,10">
-                    <Border Background="White" Padding="12,10">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="155" />
-                                <ColumnDefinition Width="150" />
-                                <ColumnDefinition Width="155" />
-                                <ColumnDefinition Width="150" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <TextBlock Text="Start / Stop" VerticalAlignment="Center" />
-                            <TextBox Grid.Column="1" Text="{Binding StartStopShortcutText, UpdateSourceTrigger=PropertyChanged}" />
-                            <TextBlock Grid.Column="2" Text="Pause / Resume" Margin="15,0,0,0" VerticalAlignment="Center" />
-                            <TextBox Grid.Column="3" Text="{Binding PauseResumeShortcutText, UpdateSourceTrigger=PropertyChanged}" />
-
-                            <TextBlock Grid.Row="1" Text="Select area" Margin="0,8,0,0" VerticalAlignment="Center" />
-                            <TextBox Grid.Row="1" Grid.Column="1" Margin="0,8,0,0"
-                                     Text="{Binding SelectAreaShortcutText, UpdateSourceTrigger=PropertyChanged}" />
-                            <Button Grid.Row="1" Grid.Column="3" Content="Apply shortcuts" Margin="0,8,0,0"
-                                    Command="{Binding ApplyShortcutsCommand}" />
-
-                            <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Content="Minimize when recording" Margin="0,10,0,0"
-                                      IsChecked="{Binding MinimizeWhenRecording}" />
-                            <CheckBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Content="Show recording indicator" Margin="15,10,0,0"
-                                      IsChecked="{Binding ShowRecordingIndicator}" />
-                        </Grid>
-                    </Border>
-                </Expander>
-            </StackPanel>
-        </ScrollViewer>
-
-        <Border Grid.Row="1" Background="White" BorderBrush="#FFD1D5DB" BorderThickness="0,1,0,0" Padding="16,12">
+        <Border Grid.Row="0" Background="White" BorderBrush="#FFE5E7EB" BorderThickness="0,0,0,1" Padding="24,16">
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="Start Recording" Command="{Binding StartCommand}" Background="#FF2563EB" Foreground="White" />
-                    <Button Content="Pause" Command="{Binding PauseCommand}" />
-                    <Button Content="Resume" Command="{Binding ResumeCommand}" />
-                    <Button Content="Stop" Command="{Binding StopCommand}" Margin="0" />
+                <Image Width="40" Height="40" Source="/Assets/AppIcon.png" Margin="0,0,12,0"
+                       SnapsToDevicePixels="True" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Local Screen Recorder" FontSize="19" FontWeight="SemiBold" Foreground="#FF111827" />
+                    <TextBlock Text="Private, local Windows capture to MP4" Foreground="#FF6B7280" Margin="0,2,0,0" />
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="{Binding StatusText}" Margin="16,0" VerticalAlignment="Center"
-                           Foreground="#FF374151" TextTrimming="CharacterEllipsis" />
-                <TextBlock Grid.Column="2" Text="{Binding DurationText}" FontSize="20" FontWeight="SemiBold"
-                           FontFamily="Consolas" VerticalAlignment="Center" />
-
-                <DockPanel Grid.Row="1" Grid.ColumnSpan="3" Margin="0,8,0,0">
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                        <Button Content="Open File" Command="{Binding OpenFileCommand}" Padding="9,4" MinHeight="26" />
-                        <Button Content="Open Folder" Command="{Binding OpenFolderCommand}" Padding="9,4" MinHeight="26" Margin="0" />
+                <Border Grid.Column="2" Background="#FFF3F4F6" CornerRadius="999" Padding="11,6" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="8" Height="8" Fill="{Binding StateAccent}" Margin="0,0,7,0" />
+                        <TextBlock Text="{Binding StateLabel}" FontWeight="SemiBold" Foreground="#FF374151" />
                     </StackPanel>
-                    <TextBlock Text="{Binding SavedPath}" Foreground="#FF6B7280" VerticalAlignment="Center"
-                               TextTrimming="CharacterEllipsis" />
-                </DockPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <TabControl Grid.Row="1" Margin="22,12,22,0" Background="Transparent" BorderThickness="0">
+            <TabItem Header="Recorder">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <Grid Margin="0,14,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.08*" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="0.92*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <Border Style="{StaticResource CardStyle}" IsEnabled="{Binding CanEditSettings}">
+                                <StackPanel>
+                                    <TextBlock Text="What to record" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="Choose the entire desktop, one display, or draw a custom area."
+                                               Foreground="#FF6B7280" Margin="0,3,0,14" />
+                                    <TextBlock Text="Capture source" Style="{StaticResource LabelText}" />
+                                    <ComboBox SelectedValue="{Binding SourceKind}" SelectedValuePath="Tag">
+                                        <ComboBoxItem Content="Entire desktop" Tag="{x:Static core:CaptureSourceKind.EntireScreen}" />
+                                        <ComboBoxItem Content="One monitor" Tag="{x:Static core:CaptureSourceKind.SelectedMonitor}" />
+                                        <ComboBoxItem Content="Custom area" Tag="{x:Static core:CaptureSourceKind.CustomArea}" />
+                                    </ComboBox>
+
+                                    <StackPanel Margin="0,12,0,0"
+                                                Visibility="{Binding IsMonitorSource, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="Monitor" Style="{StaticResource LabelText}" />
+                                        <ComboBox ItemsSource="{Binding Displays}" DisplayMemberPath="Label"
+                                                  SelectedItem="{Binding SelectedDisplay}" />
+                                    </StackPanel>
+
+                                    <Grid Margin="0,12,0,0"
+                                          Visibility="{Binding IsCustomAreaSource, Converter={StaticResource BoolToVisibility}}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="Selected area" Style="{StaticResource LabelText}" />
+                                            <TextBlock Text="{Binding SelectedRegionText}" Foreground="#FF111827"
+                                                       FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="Select area" Command="{Binding SelectAreaCommand}"
+                                                Margin="12,0,0,0" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}" IsEnabled="{Binding CanEditSettings}">
+                                <StackPanel>
+                                    <DockPanel LastChildFill="False">
+                                        <TextBlock Text="Audio" Style="{StaticResource SectionTitle}" />
+                                        <Button DockPanel.Dock="Right" Content="Refresh" Command="{Binding RefreshDevicesCommand}"
+                                                Padding="10,5" MinHeight="30" />
+                                    </DockPanel>
+                                    <TextBlock Text="Mix desktop and microphone audio, or record silently."
+                                               Foreground="#FF6B7280" Margin="0,3,0,13" />
+
+                                    <CheckBox Content="Desktop audio" IsChecked="{Binding RecordSystemAudio}" />
+                                    <Grid Margin="24,6,0,10" IsEnabled="{Binding RecordSystemAudio}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="48" />
+                                        </Grid.ColumnDefinitions>
+                                        <Slider Minimum="0" Maximum="1" TickFrequency="0.05" Value="{Binding SystemAudioVolume}"
+                                                VerticalAlignment="Center" ToolTip="Desktop audio volume in the final recording" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SystemAudioVolume, StringFormat={}{0:P0}}"
+                                                   TextAlignment="Right" Foreground="#FF6B7280" />
+                                    </Grid>
+
+                                    <CheckBox Content="Microphone" IsChecked="{Binding RecordMicrophone}" />
+                                    <StackPanel Margin="24,7,0,0" IsEnabled="{Binding RecordMicrophone}">
+                                        <ComboBox ItemsSource="{Binding Microphones}" DisplayMemberPath="Name"
+                                                  SelectedItem="{Binding SelectedMicrophone}"
+                                                  IsEnabled="{Binding IsMicrophoneSelectionEnabled}"
+                                                  ToolTip="If the saved device is unavailable, the default microphone is used." />
+                                        <Grid Margin="0,8,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="48" />
+                                            </Grid.ColumnDefinitions>
+                                            <Slider Minimum="0" Maximum="1" TickFrequency="0.05"
+                                                    Value="{Binding MicrophoneVolume}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding MicrophoneVolume, StringFormat={}{0:P0}}"
+                                                       TextAlignment="Right" Foreground="#FF6B7280" />
+                                        </Grid>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}" IsEnabled="{Binding CanEditSettings}">
+                                <StackPanel>
+                                    <TextBlock Text="Save recordings" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="MP4 files use sortable timestamps and are never overwritten."
+                                               Foreground="#FF6B7280" Margin="0,3,0,12" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Text="{Binding OutputFolder, UpdateSourceTrigger=PropertyChanged}"
+                                                 ToolTip="Folder where finalized MP4 recordings are saved" />
+                                        <Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseFolderCommand}"
+                                                Margin="9,0,0,0" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <Border Style="{StaticResource CardStyle}" Background="#FFF8FAFF" BorderBrush="#FFC7D2FE">
+                                <StackPanel>
+                                    <TextBlock Text="Ready to record" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="Your current setup at a glance." Foreground="#FF6B7280" Margin="0,3,0,14" />
+                                    <TextBlock Text="SOURCE" Style="{StaticResource SummaryLabel}" />
+                                    <TextBlock Text="{Binding SourceSummary}" Style="{StaticResource SummaryValue}" />
+                                    <TextBlock Text="AUDIO" Style="{StaticResource SummaryLabel}" />
+                                    <TextBlock Text="{Binding AudioSummary}" Style="{StaticResource SummaryValue}" />
+                                    <TextBlock Text="QUALITY" Style="{StaticResource SummaryLabel}" />
+                                    <TextBlock Text="{Binding QualitySummary}" Style="{StaticResource SummaryValue}" />
+                                    <TextBlock Text="SAVE TO" Style="{StaticResource SummaryLabel}" />
+                                    <TextBlock Text="{Binding OutputSummary}" Style="{StaticResource SummaryValue}"
+                                               ToolTip="{Binding OutputFolder}" />
+                                    <Border Background="White" BorderBrush="#FFDCE3F2" BorderThickness="1"
+                                            CornerRadius="7" Padding="10,8" Margin="0,2,0,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Global start / stop" Foreground="#FF6B7280" />
+                                            <TextBlock Grid.Column="1" Text="{Binding ShortcutSummary}" Margin="12,0,0,0"
+                                                       FontWeight="SemiBold" Foreground="#FF1D4ED8" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}" IsEnabled="{Binding CanEditSettings}">
+                                <StackPanel>
+                                    <TextBlock Text="Video quality" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="{Binding QualityDescription}" Foreground="#FF6B7280" Margin="0,3,0,13"
+                                               TextWrapping="Wrap" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="100" />
+                                        </Grid.ColumnDefinitions>
+                                        <ComboBox SelectedValue="{Binding QualityPreset}" SelectedValuePath="Tag" Margin="0,0,9,0">
+                                            <ComboBoxItem Content="Low" Tag="{x:Static core:QualityPresetKind.Low}" />
+                                            <ComboBoxItem Content="Medium" Tag="{x:Static core:QualityPresetKind.Medium}" />
+                                            <ComboBoxItem Content="High · Recommended" Tag="{x:Static core:QualityPresetKind.High}" />
+                                            <ComboBoxItem Content="Very High" Tag="{x:Static core:QualityPresetKind.VeryHigh}" />
+                                            <ComboBoxItem Content="Custom" Tag="{x:Static core:QualityPresetKind.Custom}" />
+                                        </ComboBox>
+                                        <ComboBox Grid.Column="1" ItemsSource="{Binding FrameRates}" SelectedItem="{Binding FrameRate}"
+                                                  IsEnabled="{Binding IsStandardQuality}"
+                                                  ToolTip="Frames per second supported by this preset" />
+                                    </Grid>
+
+                                    <Expander Header="Advanced encoding" Margin="0,12,0,0"
+                                              Visibility="{Binding IsCustomQuality, Converter={StaticResource BoolToVisibility}}">
+                                        <Grid Margin="0,10,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="12" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Width" Style="{StaticResource LabelText}" />
+                                                <TextBox Text="{Binding CustomWidth}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Height" Style="{StaticResource LabelText}" />
+                                                <TextBox Text="{Binding CustomHeight}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="1" Margin="0,10,0,0">
+                                                <TextBlock Text="Video kbps" Style="{StaticResource LabelText}" />
+                                                <TextBox Text="{Binding CustomVideoBitrate}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,10,0,0">
+                                                <TextBlock Text="Custom FPS" Style="{StaticResource LabelText}" />
+                                                <TextBox Text="{Binding CustomFrameRate}" />
+                                            </StackPanel>
+                                            <CheckBox Grid.Row="2" Grid.ColumnSpan="3" Margin="0,10,0,0"
+                                                      Content="Prefer hardware encoding"
+                                                      IsChecked="{Binding CustomHardwareEncoding}"
+                                                      ToolTip="Uses the available Intel, AMD, or NVIDIA encoder when supported." />
+                                        </Grid>
+                                    </Expander>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}"
+                                    Visibility="{Binding HasSavedRecording, Converter={StaticResource BoolToVisibility}}">
+                                <StackPanel>
+                                    <TextBlock Text="Latest recording" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="{Binding SavedFileName}" FontWeight="SemiBold" Foreground="#FF111827"
+                                               Margin="0,7,0,2" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding SavedPath}" Foreground="#FF6B7280" TextTrimming="CharacterEllipsis"
+                                               ToolTip="{Binding SavedPath}" />
+                                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                        <Button Content="Open" Command="{Binding OpenFileCommand}" />
+                                        <Button Content="Show in folder" Command="{Binding OpenFolderCommand}" Margin="8,0,0,0" />
+                                        <Button Content="Copy path" Command="{Binding CopyPathCommand}" Margin="8,0,0,0" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Preferences">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="0,14,0,8" IsEnabled="{Binding CanEditSettings}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Recording behavior" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="Keep the everyday workflow quick and predictable."
+                                               Foreground="#FF6B7280" Margin="0,3,0,14" />
+                                    <TextBlock Text="Countdown" Style="{StaticResource LabelText}" />
+                                    <ComboBox SelectedValue="{Binding CountdownSeconds}" SelectedValuePath="Tag" Margin="0,0,0,10">
+                                        <ComboBoxItem Content="Off" Tag="0" />
+                                        <ComboBoxItem Content="3 seconds" Tag="3" />
+                                        <ComboBoxItem Content="5 seconds" Tag="5" />
+                                    </ComboBox>
+                                    <CheckBox Content="Include the mouse cursor" IsChecked="{Binding IncludeCursor}" />
+                                    <CheckBox Content="Minimize the window when recording starts"
+                                              IsChecked="{Binding MinimizeWhenRecording}" Margin="0,5,0,0" />
+                                    <CheckBox Content="Show a small recording indicator"
+                                              IsChecked="{Binding ShowRecordingIndicator}" Margin="0,5,0,0" />
+                                    <CheckBox Content="Notify me after a recording is saved"
+                                              IsChecked="{Binding ShowNotificationAfterRecording}" Margin="0,5,0,0" />
+                                    <CheckBox Content="Start minimized"
+                                              IsChecked="{Binding StartMinimized}" Margin="0,5,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Devices" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="Reconnect a display or audio device, then refresh the available list."
+                                               Foreground="#FF6B7280" Margin="0,3,0,12" TextWrapping="Wrap" />
+                                    <Button Content="Refresh displays and audio devices"
+                                            Command="{Binding RefreshDevicesCommand}" HorizontalAlignment="Left" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Global shortcuts" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="Click a field, then press the shortcut. A modifier is required."
+                                               Foreground="#FF6B7280" Margin="0,3,0,14" TextWrapping="Wrap" />
+
+                                    <TextBlock Text="Start or stop recording" Style="{StaticResource LabelText}" />
+                                    <TextBox Text="{Binding StartStopShortcutText, UpdateSourceTrigger=PropertyChanged}"
+                                             PreviewKeyDown="OnHotkeyTextBoxPreviewKeyDown"
+                                             IsReadOnly="True" Cursor="Arrow" ToolTip="Press a modified key combination" />
+
+                                    <TextBlock Text="Pause or resume" Style="{StaticResource LabelText}" Margin="0,11,0,5" />
+                                    <TextBox Text="{Binding PauseResumeShortcutText, UpdateSourceTrigger=PropertyChanged}"
+                                             PreviewKeyDown="OnHotkeyTextBoxPreviewKeyDown"
+                                             IsReadOnly="True" Cursor="Arrow" />
+
+                                    <TextBlock Text="Select a custom area" Style="{StaticResource LabelText}" Margin="0,11,0,5" />
+                                    <TextBox Text="{Binding SelectAreaShortcutText, UpdateSourceTrigger=PropertyChanged}"
+                                             PreviewKeyDown="OnHotkeyTextBoxPreviewKeyDown"
+                                             IsReadOnly="True" Cursor="Arrow" />
+
+                                    <Button Content="Apply shortcuts" Command="{Binding ApplyShortcutsCommand}"
+                                            Style="{StaticResource PrimaryButton}" Margin="0,14,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}" Background="#FFFFFBEB" BorderBrush="#FFFDE68A">
+                                <StackPanel>
+                                    <TextBlock Text="Recording safety" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Margin="0,7,0,0" Foreground="#FF78350F" TextWrapping="Wrap"
+                                               Text="Recordings are written to a temporary MP4 first and only renamed after finalization. Closing during capture always asks to stop safely." />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <Border Grid.Row="2" Background="White" BorderBrush="#FFE5E7EB" BorderThickness="0,1,0,0" Padding="22,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="9" Height="9" Fill="{Binding StateAccent}" Margin="0,0,8,0" />
+                        <TextBlock Text="{Binding StateLabel}" FontWeight="SemiBold" Foreground="#FF111827" />
+                        <TextBlock Text=" · " Foreground="#FF9CA3AF" />
+                        <TextBlock Text="{Binding StatusText}" Foreground="#FF6B7280" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding DurationText}" FontFamily="Consolas" FontSize="22" FontWeight="SemiBold"
+                               Foreground="#FF111827" Margin="16,3,0,0" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="Pause" Command="{Binding PauseCommand}" Margin="0,0,9,0"
+                            Visibility="{Binding IsRecording, Converter={StaticResource BoolToVisibility}}" />
+                    <Button Content="Resume" Command="{Binding ResumeCommand}" Margin="0,0,9,0"
+                            Visibility="{Binding IsPaused, Converter={StaticResource BoolToVisibility}}" />
+                    <StackPanel Visibility="{Binding ShowStartAction, Converter={StaticResource BoolToVisibility}}">
+                        <Button Content="Start recording" Command="{Binding StartCommand}" Style="{StaticResource PrimaryButton}" />
+                        <TextBlock Text="{Binding ShortcutSummary}" HorizontalAlignment="Center"
+                                   Foreground="#FF6B7280" FontSize="11" Margin="0,3,0,0" />
+                    </StackPanel>
+                    <Button Content="Stop and save" Command="{Binding StopCommand}" Style="{StaticResource DangerButton}"
+                            Visibility="{Binding ShowStopAction, Converter={StaticResource BoolToVisibility}}" />
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

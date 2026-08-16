@@ -87,10 +87,27 @@ public interface IRecordingIndicatorService
 {
     void Show();
     void Hide();
-    void SetPaused(bool paused);
+    void Update(RecordingState state, TimeSpan elapsed);
 }
 
 public interface IFolderPickerService
 {
     string? PickFolder(string currentFolder);
+}
+
+public enum TrayAction
+{
+    OpenApplication,
+    StartStop,
+    PauseResume,
+    OpenRecordingsFolder,
+    Exit
+}
+
+public interface ISystemTrayService : IDisposable
+{
+    event EventHandler<TrayAction>? ActionRequested;
+    void Initialize();
+    void Update(RecordingState state, TimeSpan elapsed);
+    void ShowNotification(string title, string message, bool isError = false);
 }

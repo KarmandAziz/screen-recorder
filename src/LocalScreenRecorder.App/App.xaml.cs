@@ -67,6 +67,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IHotkeyService, HotkeyService>();
         services.AddSingleton<IRegionSelectionService, RegionSelectionService>();
         services.AddSingleton<IRecordingIndicatorService, RecordingIndicatorService>();
+        services.AddSingleton<ISystemTrayService, SystemTrayService>();
         services.AddSingleton<IFolderPickerService, FolderPickerService>();
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<MainWindow>();

@@ -1,6 +1,6 @@
 # Local Screen Recorder
 
-A compact, fully local Windows screen recorder built with C#, WPF, and .NET 10 LTS. It records one monitor, the full multi-monitor desktop, or a custom physical-pixel region to H.264/AAC MP4 with optional system audio and microphone input.
+A polished, fully local Windows screen recorder built with C#, WPF, and .NET 10 LTS. It records one monitor, the full multi-monitor desktop, or a custom physical-pixel region to H.264/AAC MP4 with optional desktop audio and microphone input.
 
 ## Requirements
 
@@ -54,11 +54,14 @@ The project is x64-only because its Media Foundation bridge contains architectur
 
 ## Using the recorder
 
-1. Choose **Entire screen**, **Selected monitor**, or **Custom area**.
-2. For a custom area, select **Select Area**, drag across any connected monitor, and release. Escape cancels.
-3. Choose system audio, microphone, volume levels, quality, frame rate, and output folder.
-4. Select **Start Recording**. Pause, resume, and stop from the window or global shortcuts.
-5. After MP4 finalization, use **Open File** or **Open Folder**.
+1. Choose **Entire desktop**, **One monitor**, or **Custom area**.
+2. For a custom area, select **Select area**, drag across any connected monitor, and release. Escape or right-click cancels.
+3. Choose desktop audio, microphone, quality, frame rate, and output folder. The summary card shows exactly what will be captured.
+4. Select **Start recording**. An optional 3- or 5-second countdown can be cancelled at any time.
+5. Pause, resume, and safely stop from the window, global shortcuts, or system-tray menu.
+6. After MP4 finalization, open the recording, show its folder, or copy its full path.
+
+Preferences include cursor capture, startup/minimize behavior, the recording indicator, notifications, countdown duration, and directly captured global shortcuts. Capture settings are locked during an active recording to prevent unsafe mid-session changes.
 
 Default global shortcuts:
 
@@ -74,7 +77,9 @@ Change them under **Settings and global shortcuts**. Registration conflicts are 
 - **Audio:** WASAPI loopback captures the default playback endpoint. WASAPI input captures the selected microphone. Both streams are resampled to 48 kHz stereo, volume-adjusted, normalized to avoid clipping, and mixed by the native recording engine.
 - **Encoding:** Microsoft Media Foundation writes H.264 video and AAC audio directly to MP4. Hardware H.264 encoding is preferred and Custom quality can disable it for software fallback. Variable frame timing is enabled to avoid unnecessary duplicate frames.
 - **Pause and synchronization:** the native Media Foundation presentation clock pauses and resumes both streams together, preserving timestamps during longer recordings.
-- **Files:** recording goes to a hidden `.partial.mp4` in the destination folder. It is moved to a unique `Recording_yyyy-MM-dd_HH-mm-ss.mp4` name only after successful finalization. Failed partial files are removed.
+- **Files:** recording goes to a hidden `.partial.mp4` in the destination folder. It is moved to a unique `Recording_yyyy-MM-dd_HH-mm-ss.mp4` name only after successful finalization. Empty failed-start files are cleaned up.
+- **Recovery:** a non-empty encoded partial MP4 is never automatically deleted if the final rename fails. The UI reports its recovery location.
+- **Lifecycle:** an explicit recording state machine prevents invalid rapid Start/Stop/Pause transitions and serializes native recorder operations.
 - **Privacy:** the main window and recording indicator use `WDA_EXCLUDEFROMCAPTURE` where Windows supports it. The custom-area border closes before capture begins. Recording only starts from a button or registered shortcut.
 - **Hotkeys:** `RegisterHotKey` handles process-wide shortcuts with conflict detection and `MOD_NOREPEAT`.
 - **Application structure:** WPF MVVM with dependency injection and interfaces around capture, audio, encoding, recording, hotkeys, display enumeration, settings, logging, and region selection.
@@ -100,6 +105,7 @@ Windows Media Foundation's AAC path in the selected native bridge supports 96, 1
 - Native recording log: `%LOCALAPPDATA%\LocalScreenRecorder\logs\native-recorder.log`
 
 Settings are human-readable JSON. A malformed file is preserved as `settings.corrupt-yyyyMMdd-HHmmss.json`, and defaults are loaded automatically.
+The settings schema is versioned and new values are normalized during load so older or partially corrupt configuration remains usable.
 
 ## Tests
 
