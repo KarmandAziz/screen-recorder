@@ -11,17 +11,31 @@
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>x64</Platforms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <AssemblyName>LocalScreenRecorder</AssemblyName>
     <RootNamespace>LocalScreenRecorder.App</RootNamespace>
+    <Product>Local Screen Recorder</Product>
+    <Title>Local Screen Recorder</Title>
+    <Description>A private, local Windows screen recorder for MP4 capture.</Description>
+    <Version>1.1.0</Version>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <RepositoryUrl>https://github.com/KarmandAziz/screen-recorder</RepositoryUrl>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
     <PackageReference Include="ScreenRecorderLib" Version="6.6.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LocalScreenRecorder.Core\LocalScreenRecorder.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\AppIcon.png" />
   </ItemGroup>
 
 </Project>

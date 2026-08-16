@@ -4,20 +4,22 @@
         WindowStyle="None"
         ResizeMode="NoResize"
         AllowsTransparency="True"
-        Background="#B3000000"
+        Background="Transparent"
         Topmost="True"
         ShowInTaskbar="False"
         Cursor="Cross"
         KeyDown="OnKeyDown"
         MouseLeftButtonDown="OnMouseLeftButtonDown"
         MouseMove="OnMouseMove"
-        MouseLeftButtonUp="OnMouseLeftButtonUp">
+        MouseLeftButtonUp="OnMouseLeftButtonUp"
+        MouseRightButtonDown="OnMouseRightButtonDown">
     <Canvas x:Name="OverlayCanvas" ClipToBounds="True">
+        <Path x:Name="DimPath" Fill="#A6000000" IsHitTestVisible="False" />
         <Rectangle x:Name="SelectionRectangle"
                    Visibility="Collapsed"
                    Stroke="#FF60A5FA"
                    StrokeThickness="2"
-                   Fill="#22000000" />
+                   Fill="#08000000" />
         <Border x:Name="SizeBadge"
                 Visibility="Collapsed"
                 Background="#F21F2937"
@@ -27,8 +29,12 @@
         </Border>
         <Border Background="#E61F2937" CornerRadius="6" Padding="14,9"
                 Canvas.Left="20" Canvas.Top="20">
-            <TextBlock Foreground="White" FontSize="14"
-                       Text="Drag to select an area  •  Esc to cancel" />
+            <StackPanel>
+                <TextBlock Foreground="White" FontSize="14" FontWeight="SemiBold"
+                           Text="Select an area to record" />
+                <TextBlock Foreground="#FFD1D5DB" Margin="0,3,0,0"
+                           Text="Drag anywhere across your displays · Esc or right-click to cancel" />
+            </StackPanel>
         </Border>
     </Canvas>
 </Window>

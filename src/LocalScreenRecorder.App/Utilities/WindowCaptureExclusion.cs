@@ -7,6 +7,9 @@ internal static class WindowCaptureExclusion
 {
     public static void Apply(Window window)
     {
+#if DEBUG
+        if (Environment.GetEnvironmentVariable("LOCAL_SCREEN_RECORDER_UI_TEST") == "1") return;
+#endif
         var handle = new WindowInteropHelper(window).Handle;
         if (handle != nint.Zero && OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041))
         {

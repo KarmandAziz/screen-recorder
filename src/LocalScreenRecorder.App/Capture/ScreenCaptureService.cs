@@ -16,14 +16,14 @@ public sealed class ScreenCaptureService(RegionCoordinateConverter coordinateCon
 
         return request.SourceKind switch
         {
-            CaptureSourceKind.EntireScreen => CreateEntireDesktopPlan(request.Displays),
-            CaptureSourceKind.SelectedMonitor => CreateMonitorPlan(request.SelectedDisplay),
-            CaptureSourceKind.CustomArea => CreateRegionPlan(request.SelectedRegion, request.Displays),
+            CaptureSourceKind.EntireScreen => CreateEntireDesktopPlan(request.Displays, request.IncludeCursor),
+            CaptureSourceKind.SelectedMonitor => CreateMonitorPlan(request.SelectedDisplay, request.IncludeCursor),
+            CaptureSourceKind.CustomArea => CreateRegionPlan(request.SelectedRegion, request.Displays, request.IncludeCursor),
             _ => throw new ArgumentOutOfRangeException(nameof(request.SourceKind))
         };
     }
 
-    private CapturePlan CreateEntireDesktopPlan(IReadOnlyList<DisplayInfo> displays)
+    private CapturePlan CreateEntireDesktopPlan(IReadOnlyList<DisplayInfo> displays, bool includeCursor)
     {
         var bounds = displayService.GetVirtualBounds(displays);
         var options = new SourceOptions();
@@ -36,13 +36,14 @@ public sealed class ScreenCaptureService(RegionCoordinateConverter coordinateCon
                     display.Bounds.Left - bounds.Left,
                     display.Bounds.Top - bounds.Top,
                     display.Bounds.Width,
-                    display.Bounds.Height)));
+                    display.Bounds.Height),
+                includeCursor));
         }
 
         return new CapturePlan(options, bounds);
     }
 
-    private static CapturePlan CreateMonitorPlan(DisplayInfo? display)
+    private static CapturePlan CreateMonitorPlan(DisplayInfo? display, bool includeCursor)
     {
         if (display is null)
         {
@@ -51,11 +52,11 @@ public sealed class ScreenCaptureService(RegionCoordinateConverter coordinateCon
 
         var options = new SourceOptions();
         options.RecordingSources.Add(CreateSource(display, null,
-            new PixelRect(0, 0, display.Bounds.Width, display.Bounds.Height)));
+            new PixelRect(0, 0, display.Bounds.Width, display.Bounds.Height), includeCursor));
         return new CapturePlan(options, display.Bounds);
     }
 
-    private CapturePlan CreateRegionPlan(PixelRect? region, IReadOnlyList<DisplayInfo> displays)
+    private CapturePlan CreateRegionPlan(PixelRect? region, IReadOnlyList<DisplayInfo> displays, bool includeCursor)
     {
         if (region is null || region.Value.Width < 16 || region.Value.Height < 16)
         {
@@ -71,19 +72,23 @@ public sealed class ScreenCaptureService(RegionCoordinateConverter coordinateCon
         var options = new SourceOptions();
         foreach (var slice in slices)
         {
-            options.RecordingSources.Add(CreateSource(slice.Display, slice.SourceRect, slice.DestinationRect));
+            options.RecordingSources.Add(CreateSource(slice.Display, slice.SourceRect, slice.DestinationRect, includeCursor));
         }
 
         return new CapturePlan(options, region.Value);
     }
 
-    private static DisplayRecordingSource CreateSource(DisplayInfo display, PixelRect? crop, PixelRect destination)
+    private static DisplayRecordingSource CreateSource(
+        DisplayInfo display,
+        PixelRect? crop,
+        PixelRect destination,
+        bool includeCursor)
     {
         var source = new DisplayRecordingSource(display.DeviceName)
         {
             RecorderApi = RecorderApi.WindowsGraphicsCapture,
             IsBorderRequired = false,
-            IsCursorCaptureEnabled = true,
+            IsCursorCaptureEnabled = includeCursor,
             AnchorPoint = Anchor.TopLeft,
             Position = new ScreenPoint(destination.X, destination.Y),
             OutputSize = new ScreenSize(destination.Width, destination.Height),

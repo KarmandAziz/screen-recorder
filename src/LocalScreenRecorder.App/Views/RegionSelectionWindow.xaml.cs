@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using LocalScreenRecorder.App.Utilities;
 using LocalScreenRecorder.Core.Models;
 
@@ -21,7 +22,7 @@ public partial class RegionSelectionWindow : Window
         {
             Activate();
             Focus();
-            if (currentRegion is not null) RenderSelection(currentRegion.Value);
+            RenderSelection(currentRegion ?? default);
         };
     }
 
@@ -72,10 +73,17 @@ public partial class RegionSelectionWindow : Window
         Close();
     }
 
+    private void OnMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        DialogResult = false;
+        Close();
+    }
+
     private void RenderSelection(PixelRect selection)
     {
         var source = PresentationSource.FromVisual(this);
-        var transform = source?.CompositionTarget?.TransformFromDevice ?? System.Windows.Media.Matrix.Identity;
+        var transform = source?.CompositionTarget?.TransformFromDevice ?? Matrix.Identity;
+        var fullSize = transform.Transform(new Point(_virtualBounds.Width, _virtualBounds.Height));
         var topLeft = transform.Transform(new Point(selection.Left - _virtualBounds.Left, selection.Top - _virtualBounds.Top));
         var bottomRight = transform.Transform(new Point(selection.Right - _virtualBounds.Left, selection.Bottom - _virtualBounds.Top));
         var width = Math.Max(0, bottomRight.X - topLeft.X);
@@ -85,12 +93,18 @@ public partial class RegionSelectionWindow : Window
         Canvas.SetTop(SelectionRectangle, topLeft.Y);
         SelectionRectangle.Width = width;
         SelectionRectangle.Height = height;
-        SelectionRectangle.Visibility = Visibility.Visible;
+        SelectionRectangle.Visibility = selection.IsEmpty ? Visibility.Collapsed : Visibility.Visible;
+
+        var fullGeometry = new RectangleGeometry(new Rect(0, 0, fullSize.X, fullSize.Y));
+        var selectedGeometry = selection.IsEmpty
+            ? Geometry.Empty
+            : new RectangleGeometry(new Rect(topLeft.X, topLeft.Y, width, height));
+        DimPath.Data = new CombinedGeometry(GeometryCombineMode.Exclude, fullGeometry, selectedGeometry);
 
         SizeText.Text = $"{selection.Width} × {selection.Height}";
         SizeBadge.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-        Canvas.SetLeft(SizeBadge, Math.Max(8, topLeft.X + 8));
-        Canvas.SetTop(SizeBadge, Math.Max(8, topLeft.Y + height - SizeBadge.DesiredSize.Height - 8));
+        Canvas.SetLeft(SizeBadge, Math.Clamp(topLeft.X + 8, 8, Math.Max(8, fullSize.X - SizeBadge.DesiredSize.Width - 8)));
+        Canvas.SetTop(SizeBadge, Math.Clamp(topLeft.Y + height + 8, 8, Math.Max(8, fullSize.Y - SizeBadge.DesiredSize.Height - 8)));
         SizeBadge.Visibility = selection.IsEmpty ? Visibility.Collapsed : Visibility.Visible;
     }
 }

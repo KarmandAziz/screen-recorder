@@ -8,5 +8,6 @@ public sealed record DisplayInfo(
     double DpiScaleX = 1.0,
     double DpiScaleY = 1.0)
 {
-    public string Label => $"{FriendlyName} — {Bounds.Width} × {Bounds.Height}{(IsPrimary ? " (Primary)" : string.Empty)}";
+    public string Orientation => Bounds.Height > Bounds.Width ? "Portrait" : "Landscape";
+    public string Label => $"{FriendlyName} · {Bounds.Width} × {Bounds.Height} · {Orientation}{(IsPrimary ? " · Primary" : string.Empty)}";
 }

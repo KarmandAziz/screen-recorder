@@ -6,6 +6,8 @@ namespace LocalScreenRecorder.App.Services;
 
 public sealed class SettingsService(SettingsSerializer serializer, ILoggingService logger) : ISettingsService
 {
+    private readonly SemaphoreSlim _saveGate = new(1, 1);
+
     public string SettingsPath { get; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "LocalScreenRecorder",
@@ -31,11 +33,29 @@ public sealed class SettingsService(SettingsSerializer serializer, ILoggingServi
 
     public async Task SaveAsync(AppSettings settings, CancellationToken cancellationToken = default)
     {
-        var directory = Path.GetDirectoryName(SettingsPath)!;
-        Directory.CreateDirectory(directory);
-        var temporary = SettingsPath + ".tmp";
-        await File.WriteAllTextAsync(temporary, serializer.Serialize(settings), cancellationToken);
-        File.Move(temporary, SettingsPath, true);
+        await _saveGate.WaitAsync(cancellationToken);
+        string? temporary = null;
+        try
+        {
+            var directory = Path.GetDirectoryName(SettingsPath)!;
+            Directory.CreateDirectory(directory);
+            temporary = Path.Combine(directory, $"settings.{Guid.NewGuid():N}.tmp");
+            await File.WriteAllTextAsync(temporary, serializer.Serialize(settings), cancellationToken);
+            File.Move(temporary, SettingsPath, true);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            logger.Error("Settings could not be saved.", exception);
+            throw new IOException("Settings could not be saved. Check access to the Local AppData folder.", exception);
+        }
+        finally
+        {
+            if (temporary is not null)
+            {
+                try { File.Delete(temporary); } catch { }
+            }
+            _saveGate.Release();
+        }
     }
 
     private void TryPreserveCorruptFile()
